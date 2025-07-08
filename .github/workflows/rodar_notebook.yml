@@ -2,7 +2,7 @@ name: Executar notebook diariamente às 11h (Brasília)
 
 on:
   schedule:
-    - cron: '0 14 * * *'  # 14h UTC = 11h da manhã no Brasil
+    - cron: '0 13 * * *'  # 14h UTC = 11h da manhã no Brasil
   workflow_dispatch:
 
 jobs:
