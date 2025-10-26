@@ -1,8 +1,10 @@
-name: Enviar promoções grupo às 11h (Brasília)
+name: Enviar promoções grupo 3x por dia (Brasília)
 
 on:
   schedule:
-    - cron: '0 13 * * *'  # 14h UTC = 11h da manhã no Brasil
+    - cron: '0 10 * * *'  # 07h BRT
+    - cron: '0 14 * * *'  # 11h BRT
+    - cron: '0 23 * * *'  # 20h BRT
   workflow_dispatch:
 
 jobs:
