@@ -1,4 +1,4 @@
-name: Executar notebook diariamente às 11h (Brasília)
+name: Enviar promoções grupo às 11h (Brasília)
 
 on:
   schedule:
