@@ -5,6 +5,7 @@ on:
     - cron: '0 10 * * *'  # 07h BRT
     - cron: '0 14 * * *'  # 11h BRT
     - cron: '0 23 * * *'  # 20h BRT
+    - cron: '0 24 * * *'  # 21h BRT
   workflow_dispatch:
 
 jobs:
