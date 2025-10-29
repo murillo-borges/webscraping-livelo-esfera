@@ -2,10 +2,10 @@ name: Enviar promoções grupo 3x por dia (Brasília)
 
 on:
   schedule:
-    - cron: '0 10 * * *'  # 07h BRT
+    - cron: '0 11 * * *'  # 08h BRT
     - cron: '0 14 * * *'  # 11h BRT
-    - cron: '0 23 * * *'  # 20h BRT
-    - cron: '0 00 * * *'  # 21h BRT
+    - cron: '0 18 * * *'  # 15h BRT
+    - cron: '0 21 * * *'  # 18h BRT
   workflow_dispatch:
 
 jobs:
