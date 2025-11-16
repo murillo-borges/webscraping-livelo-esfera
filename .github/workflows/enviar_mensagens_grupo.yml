@@ -1,0 +1,40 @@
+name: Enviar promoções diariamente no grupo
+
+on:
+  schedule:
+    - cron: '0 11 * * *'  # 08h BRT
+    - cron: '0 14 * * *'  # 11h BRT
+    - cron: '10 17 * * *' # 14h10 BRT  ← NOVO
+    - cron: '0 20 * * *'  # 17h BRT
+    - cron: '0 21 * * *'  # 18h BRT
+  workflow_dispatch:
+
+jobs:
+  notebook:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Clonar repositório
+      uses: actions/checkout@v3
+
+    - name: Instalar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Instalar dependências
+      run: |
+        pip install -r requirements.txt
+        pip install jupyter nbconvert nbformat
+
+    - name: Executar notebook
+      env:
+        EMAIL_REMETENTE: ${{ secrets.EMAIL_REMETENTE }}
+        EMAIL_DESTINATARIO: ${{ secrets.EMAIL_DESTINATARIO }}
+        SENHA_GMAIL: ${{ secrets.SENHA_GMAIL }}
+        ID_GRUPO_MILHAS: ${{ secrets.ID_GRUPO_MILHAS }}
+        ID_GRUPO_PESSOAL_TESTES: ${{ secrets.ID_GRUPO_PESSOAL_TESTES }}
+        INSTANCE_ID: ${{ secrets.INSTANCE_ID }}
+        API_KEY: ${{ secrets.API_KEY }}
+      run: |
+        jupyter nbconvert --to notebook --execute Webscraping_Whats_Milhas.ipynb --inplace

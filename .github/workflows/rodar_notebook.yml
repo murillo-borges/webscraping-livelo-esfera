@@ -1,0 +1,32 @@
+name: Executar notebook diariamente às 11h (Brasília)
+
+on:
+  schedule:
+    - cron: '0 13 * * *'  # 14h UTC = 11h da manhã no Brasil
+  workflow_dispatch:
+
+jobs:
+  notebook:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Clonar repositório
+      uses: actions/checkout@v3
+
+    - name: Instalar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Instalar dependências
+      run: |
+        pip install -r requirements.txt
+        pip install jupyter nbconvert nbformat
+
+    - name: Executar notebook
+      env:
+        EMAIL_REMETENTE: ${{ secrets.EMAIL_REMETENTE }}
+        EMAIL_DESTINATARIO: ${{ secrets.EMAIL_DESTINATARIO }}
+        SENHA_GMAIL: ${{ secrets.SENHA_GMAIL }}
+      run: |
+        jupyter nbconvert --to notebook --execute Webscraping_LiveloEsfera.ipynb --inplace
