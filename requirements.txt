@@ -1,3 +1,7 @@
 selenium
 beautifulsoup4
 lxml
+openai
+requests
+gspread
+oauth2client
