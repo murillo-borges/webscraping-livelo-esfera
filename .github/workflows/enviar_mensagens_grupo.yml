@@ -30,12 +30,17 @@ jobs:
 
     - name: Executar notebook
       env:
-        EMAIL_REMETENTE: ${{ secrets.EMAIL_REMETENTE }}
-        EMAIL_DESTINATARIO: ${{ secrets.EMAIL_DESTINATARIO }}
-        SENHA_GMAIL: ${{ secrets.SENHA_GMAIL }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+        SHEET_ID: ${{ secrets.SHEET_ID }}
         ID_GRUPO_MILHAS: ${{ secrets.ID_GRUPO_MILHAS }}
         ID_GRUPO_PESSOAL_TESTES: ${{ secrets.ID_GRUPO_PESSOAL_TESTES }}
         INSTANCE_ID: ${{ secrets.INSTANCE_ID }}
         API_KEY: ${{ secrets.API_KEY }}
+        URL_SCRAPING: ${{ secrets.URL_SCRAPING }}
+        URL_SCRAPING_TWO: ${{ secrets.URL_SCRAPING_TWO }}
+        EMAIL_DESTINATARIO: ${{ secrets.EMAIL_DESTINATARIO }}
+        EMAIL_REMETENTE: ${{ secrets.EMAIL_REMETENTE }}
+        SENHA_GMAIL: ${{ secrets.SENHA_GMAIL }}
       run: |
         jupyter nbconvert --to notebook --execute Webscraping_Whats_Milhas.ipynb --inplace
