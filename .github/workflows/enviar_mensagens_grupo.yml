@@ -8,6 +8,7 @@ on:
     - cron: '10 17 * * *' # 14h10 BRT
     - cron: '0 20 * * *'  # 17h BRT
     - cron: '0 21 * * *'  # 18h BRT
+    - cron: '0 22 * * *'  # 19 BRT Novo
   workflow_dispatch:
 
 jobs:
