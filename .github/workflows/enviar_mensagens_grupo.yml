@@ -2,7 +2,7 @@ name: Enviar promoções diariamente no grupo
 
 on:
   schedule:
-    - cron: '0 10 * * *'  # 07h am
+    - cron: '30 9 * * *'  # 06h30 am
     - cron: '0 12 * * *' # 09h am
     - cron: '10 14 * * *' # 11h10 am
     - cron: '10 16 * * *' # 13h10 pm
