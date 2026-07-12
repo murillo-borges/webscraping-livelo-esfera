@@ -2,13 +2,10 @@ name: Enviar promoções diariamente no grupo
 
 on:
   schedule:
-    - cron: '30 9 * * *'  # 06h30 am
-    - cron: '0 12 * * *' # 09h am
-    - cron: '10 14 * * *' # 11h10 am
-    - cron: '10 16 * * *' # 13h10 pm
-    - cron: '0 18 * * *'  # 15h pm
-    - cron: '0 20 * * *'  # 17h pm
-    - cron: '0 22 * * *'  # 19 pm
+    # Seg-Sex: de hora em hora, das 07h38 às 20h38 (horário de Brasília, UTC-3)
+    - cron: '38 10-23 * * 1-5'
+    # Sáb-Dom: de hora em hora, das 09h38 às 18h38 (horário de Brasília, UTC-3)
+    - cron: '38 12-21 * * 0,6'
   workflow_dispatch:
 
 jobs:
@@ -31,9 +28,10 @@ jobs:
 
     - name: Executar notebook
       env:
-        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
         SHEET_ID: ${{ secrets.SHEET_ID }}
+        SHEET_ID_CONTROLE_ENVIOS: ${{ secrets.SHEET_ID_CONTROLE_ENVIOS }}
         ID_GRUPO_MILHAS: ${{ secrets.ID_GRUPO_MILHAS }}
         ID_GRUPO_PESSOAL_TESTES: ${{ secrets.ID_GRUPO_PESSOAL_TESTES }}
         INSTANCE_ID: ${{ secrets.INSTANCE_ID }}
@@ -44,4 +42,4 @@ jobs:
         EMAIL_REMETENTE: ${{ secrets.EMAIL_REMETENTE }}
         SENHA_GMAIL: ${{ secrets.SENHA_GMAIL }}
       run: |
-        jupyter nbconvert --to notebook --execute Webscraping_Whats_Milhas.ipynb --inplace
+        jupyter nbconvert --to notebook --execute Webscraping_Whats_Milhas_New_Version.ipynb --inplace
