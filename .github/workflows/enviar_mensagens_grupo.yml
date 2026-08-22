@@ -41,5 +41,6 @@ jobs:
         EMAIL_DESTINATARIO: ${{ secrets.EMAIL_DESTINATARIO }}
         EMAIL_REMETENTE: ${{ secrets.EMAIL_REMETENTE }}
         SENHA_GMAIL: ${{ secrets.SENHA_GMAIL }}
+        NUMERO_PESSOAL: ${{ secrets.NUMERO_PESSOAL }}
       run: |
         jupyter nbconvert --to notebook --execute Webscraping_Whats_Milhas_New_Version.ipynb --inplace
