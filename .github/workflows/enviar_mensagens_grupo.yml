@@ -1,11 +1,10 @@
 name: Enviar promoções diariamente no grupo
 
 on:
-  schedule:
-    # Seg-Sex: de hora em hora, das 07h38 às 20h38 (horário de Brasília, UTC-3)
-    - cron: '38 10-23 * * 1-5'
-    # Sáb-Dom: de hora em hora, das 09h38 às 18h38 (horário de Brasília, UTC-3)
-    - cron: '38 12-21 * * 0,6'
+  # O agendamento nao usa mais o "schedule:" do GitHub Actions - a fila
+  # interna dele atrasa (as vezes horas) em periodos de pico. O disparo
+  # agora vem de fora, via cron-job.org chamando a API de workflow_dispatch
+  # nos mesmos horarios de antes (ver README ou o guia de setup).
   workflow_dispatch:
 
 jobs:
