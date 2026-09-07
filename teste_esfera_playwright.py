@@ -19,7 +19,7 @@ PARCEIROS_TESTE = ["Adidas", "Agaxtur Viagens e Turismo"]
 
 
 def extrair_parceiros_esfera(pagina):
-    links = pagina.eval_on_selector_all(
+    links_brutos = pagina.eval_on_selector_all(
         'a[href*="/p/"]',
         """els => els
             .filter(a => a.textContent.includes('Ganhe'))
@@ -27,8 +27,13 @@ def extrair_parceiros_esfera(pagina):
         """,
     )
 
+    # Diagnóstico: quantos links de parceiro (qualquer nome) apareceram no
+    # total - separa "não carregou nada" de "carregou mas não achou os 2
+    # nomes de teste".
+    print(f"Total de links de parceiro (qualquer nome) encontrados na página: {len(links_brutos)}")
+
     resultado = []
-    for item in links:
+    for item in links_brutos:
         texto = item["texto"]
         m = re.match(r"^(.*?)\s*Ganhe\s+(.*)$", texto)
         if not m:
@@ -51,10 +56,11 @@ def main():
         )
 
         print(f"Acessando {URL_ESFERA} ...")
-        pagina.goto(URL_ESFERA, timeout=30000, wait_until="domcontentloaded")
-        pagina.wait_for_timeout(5000)  # dá tempo do JS carregar os parceiros
+        pagina.goto(URL_ESFERA, timeout=45000, wait_until="networkidle")
+        pagina.wait_for_timeout(15000)  # dá bastante tempo do JS carregar os parceiros
 
         print(f"Título da página carregada: {pagina.title()}")
+        print(f"Tamanho do HTML renderizado: {len(pagina.content())} caracteres")
 
         parceiros = extrair_parceiros_esfera(pagina)
 
