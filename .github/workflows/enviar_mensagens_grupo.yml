@@ -44,3 +44,30 @@ jobs:
         NUMERO_PESSOAL: ${{ secrets.NUMERO_PESSOAL }}
       run: |
         jupyter nbconvert --to notebook --execute Webscraping_Whats_Milhas_New_Version.ipynb --inplace
+
+    - name: Mostrar saídas das células (debug)
+      # O nbconvert --execute não ecoa os print()/erros das células no log
+      # do Actions - eles ficam só guardados dentro do .ipynb executado, que
+      # nem é salvo em lugar nenhum. Esse passo lê o notebook logo depois de
+      # rodar e imprime tudo no log, pra dar pra debugar sem precisar salvar
+      # o notebook executado em nenhum lugar. "if: always()" garante que
+      # roda mesmo se o passo anterior falhar.
+      if: always()
+      run: |
+        python3 - <<'EOF'
+        import nbformat
+
+        nb = nbformat.read("Webscraping_Whats_Milhas_New_Version.ipynb", as_version=4)
+        for i, cell in enumerate(nb.cells):
+            if cell.cell_type != "code":
+                continue
+            for out in cell.get("outputs", []):
+                if out.get("output_type") == "stream":
+                    texto = out.get("text", "")
+                    if texto.strip():
+                        print(f"--- Célula {i} ({out.get('name')}) ---")
+                        print(texto)
+                elif out.get("output_type") == "error":
+                    print(f"--- Célula {i}: ERRO NÃO TRATADO ---")
+                    print("\n".join(out.get("traceback", [])))
+        EOF
