@@ -6,3 +6,4 @@ google-genai
 requests
 gspread
 oauth2client
+playwright
