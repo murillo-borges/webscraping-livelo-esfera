@@ -25,9 +25,16 @@ from datetime import datetime
 from playwright.sync_api import sync_playwright
 
 URL_SEATS_AERO = "https://seats.aero/search"
-COMPANHIAS = "G3,AD,LA"  # Gol/Smiles, Azul, LATAM
+COMPANHIAS = "G3,AD,LA"  # Gol/Smiles, Azul, LATAM (companhias OPERADORAS do voo)
 DIAS_JANELA = 60  # limite do plano gratuito (~2 meses)
 MAX_TAXAS_CENTAVOS = 40000  # mesmo limite usado na busca manual (max_fees)
+
+# Fontes (programas de fidelidade) aceitas no resultado final - o filtro
+# de COMPANHIAS acima é sobre quem OPERA o voo, não sobre em qual
+# programa a vaga está sendo anunciada (por isso o teste anterior, sem
+# esse filtro, trouxe também aeroplan/delta/flyingblue/united/
+# virginatlantic). Nomes exatos confirmados em _api/vuerefdata.
+FONTES_PERMITIDAS = ["smiles", "azul"]
 
 # JS executado de dentro da página já carregada: varre as datas uma a uma
 # e, pra cada rota (origem-destino) encontrada, guarda só a melhor oferta
@@ -35,7 +42,7 @@ MAX_TAXAS_CENTAVOS = 40000  # mesmo limite usado na busca manual (max_fees)
 # agregação já em JS pra não precisar trafegar todo o bruto (são ~900
 # rotas por dia x 61 dias) de volta pro Python.
 SCRIPT_JS = """
-async ({ carriers, hoje, dias, maxTaxas }) => {
+async ({ carriers, hoje, dias, maxTaxas, fontesPermitidas }) => {
     const CLASSES = [
         ["Econômica", "ym", "ys"],
         ["Premium", "wm", "ws"],
@@ -46,7 +53,10 @@ async ({ carriers, hoje, dias, maxTaxas }) => {
     const erros = [];
     const base = new Date(hoje + "T00:00:00");
 
-    async function buscarComRetry(params, tentativas = 2) {
+    // A primeira/segunda data às vezes cai numa página de desafio do
+    // Cloudflare ainda "esquentando" logo após o load (volta HTML em vez
+    // de JSON) - por isso mais tentativas com espera maior no começo.
+    async function buscarComRetry(params, tentativas = 3) {
         for (let t = 1; t <= tentativas; t++) {
             const resp = await fetch("https://seats.aero/_api/search_partial?" + params.toString(), { credentials: "omit" });
             const texto = await resp.text();
@@ -56,7 +66,7 @@ async ({ carriers, hoje, dias, maxTaxas }) => {
                 if (t === tentativas) {
                     return { ok: false, erro: `resposta não-JSON após ${tentativas} tentativas: ${String(e)}` };
                 }
-                await new Promise(r => setTimeout(r, 2000));
+                await new Promise(r => setTimeout(r, 3000));
             }
         }
     }
@@ -86,6 +96,7 @@ async ({ carriers, hoje, dias, maxTaxas }) => {
                 erros.push({ data: dataStr, erro: resultado.data.errorMessage || "erro desconhecido" });
             } else if (resultado.data.metadata) {
                 for (const m of resultado.data.metadata) {
+                    if (!fontesPermitidas.includes(m.source)) continue;
                     const rota = m.oa + "-" + m.da;
 
                     // Acha a cabine mais barata DISPONÍVEL nesse registro
@@ -141,17 +152,23 @@ def main():
 
         print(f"Acessando {URL_SEATS_AERO} ...")
         pagina.goto(URL_SEATS_AERO, timeout=45000, wait_until="networkidle")
-        pagina.wait_for_timeout(5000)
+        pagina.wait_for_timeout(8000)
 
         print(f"Título da página carregada: {pagina.title()}")
         print(
-            f"Buscando todas as rotas domésticas do Brasil ({COMPANHIAS}) de "
-            f"{hoje} até +{DIAS_JANELA} dias - isso demora uns 40-60s..."
+            f"Buscando todas as rotas domésticas do Brasil ({COMPANHIAS}), fontes "
+            f"{FONTES_PERMITIDAS}, de {hoje} até +{DIAS_JANELA} dias - isso demora uns 40-60s..."
         )
 
         resultado = pagina.evaluate(
             SCRIPT_JS,
-            {"carriers": COMPANHIAS, "hoje": hoje, "dias": DIAS_JANELA, "maxTaxas": MAX_TAXAS_CENTAVOS},
+            {
+                "carriers": COMPANHIAS,
+                "hoje": hoje,
+                "dias": DIAS_JANELA,
+                "maxTaxas": MAX_TAXAS_CENTAVOS,
+                "fontesPermitidas": FONTES_PERMITIDAS,
+            },
         )
 
         navegador.close()
