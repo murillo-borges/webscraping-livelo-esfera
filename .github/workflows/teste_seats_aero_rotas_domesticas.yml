@@ -1,0 +1,25 @@
+name: Teste - Seats.aero Rotas Domésticas (mais baratas)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  teste:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar repositório
+        uses: actions/checkout@v3
+
+      - name: Instalar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Instalar Playwright
+        run: |
+          pip install playwright
+          playwright install --with-deps chromium
+
+      - name: Rodar teste (rotas domésticas mais baratas - G3/AD/LA)
+        run: python teste_seats_aero_rotas_domesticas.py

@@ -45,6 +45,25 @@ async ({ origem, destino, hoje, dias }) => {
     const resultados = [];
     const erros = [];
     const base = new Date(hoje + "T00:00:00");
+
+    // A primeira chamada às vezes cai numa página de desafio do Cloudflare
+    // ainda "esquentando" (volta HTML em vez de JSON) - por isso cada
+    // busca tenta de novo uma vez, com uma pausa maior, antes de desistir.
+    async function buscarComRetry(params, tentativas = 2) {
+        for (let t = 1; t <= tentativas; t++) {
+            const resp = await fetch("https://seats.aero/_api/search_partial?" + params.toString(), { credentials: "omit" });
+            const texto = await resp.text();
+            try {
+                return { ok: true, data: JSON.parse(texto) };
+            } catch (e) {
+                if (t === tentativas) {
+                    return { ok: false, erro: `resposta não-JSON após ${tentativas} tentativas: ${String(e)}` };
+                }
+                await new Promise(r => setTimeout(r, 2000));
+            }
+        }
+    }
+
     for (let i = 0; i <= dias; i++) {
         const d = new Date(base);
         d.setDate(d.getDate() + i);
@@ -60,12 +79,13 @@ async ({ origem, destino, hoje, dias }) => {
             client_date: hoje,
         });
         try {
-            const resp = await fetch("https://seats.aero/_api/search_partial?" + params.toString(), { credentials: "omit" });
-            const data = await resp.json();
-            if (!data.error && data.metadata) {
-                resultados.push({ data: dataStr, metadata: data.metadata });
-            } else if (data.error) {
-                erros.push({ data: dataStr, erro: data.errorMessage || "erro desconhecido" });
+            const resultado = await buscarComRetry(params);
+            if (!resultado.ok) {
+                erros.push({ data: dataStr, erro: resultado.erro });
+            } else if (!resultado.data.error && resultado.data.metadata) {
+                resultados.push({ data: dataStr, metadata: resultado.data.metadata });
+            } else if (resultado.data.error) {
+                erros.push({ data: dataStr, erro: resultado.data.errorMessage || "erro desconhecido" });
             }
         } catch (e) {
             erros.push({ data: dataStr, erro: String(e) });
@@ -89,7 +109,7 @@ def main():
 
         print(f"Acessando {URL_SEATS_AERO} ...")
         pagina.goto(URL_SEATS_AERO, timeout=45000, wait_until="networkidle")
-        pagina.wait_for_timeout(3000)
+        pagina.wait_for_timeout(5000)
 
         print(f"Título da página carregada: {pagina.title()}")
         print(f"Buscando {ORIGEM} -> {DESTINO} de {hoje} até +{DIAS_JANELA} dias (isso demora ~30-40s)...")
